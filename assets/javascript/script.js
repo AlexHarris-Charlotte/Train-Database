@@ -15,11 +15,13 @@ var config = {
   };
 firebase.initializeApp(config);
 
-var database = firebase.database();
+const database = firebase.database();
 const trainId = $("#train-name");
 const trainDest = $("#destination");
 const trainArrival = $("#train-time");
 const trainFreq = $("#frequency");
+var dataArray = [];
+
 
 $("#sub-button").on("click", subButton);
 
@@ -31,10 +33,9 @@ function subButton(event) {
     const destination = trainDest.val().trim();
     const trainTime = trainArrival.val().trim();
     const frequency = trainFreq.val().trim();
-    // Send Values to database
     // Need a way to make new objects or else
     // we just overwrite previous object
-    database.ref().set({
+    database.ref("Train/" + name).set({
         trainName: name,
         trainDestination: destination,
         trainTime: trainTime,
@@ -43,7 +44,57 @@ function subButton(event) {
     trainId.val("");
     trainDest.val("");
     trainArrival.val("");
-    trainFreq.val("");    
+    trainFreq.val("");
+
+    var trainsNode = firebase.database().ref("Train/" + name);
+    trainsNode.on('value', function(snapshot) {
+    let remoteData = snapshot.val();
+    console.log(remoteData);
+    let trainDisplay = remoteData.trainName;
+    dataArray.push(trainDisplay);
+    let destinationDisplay = remoteData.trainDestination;
+    dataArray.push(destinationDisplay);
+    let timeDisplay = remoteData.trainTime;
+    dataArray.push(timeDisplay);
+    let frequencyDisplay = remoteData.trainFrequency;
+    dataArray.push(frequencyDisplay);
+    var tableRow = $("<tr>");
+    $("#train-display").append(tableRow);
+    for(var i = 0; i < dataArray.length; i++) {
+        let tableData = $("<td>");
+        tableData.text(dataArray[i]);
+        tableRow.append(tableData);
+    }
+    // push to array
+    // use for loop to make dom elements and append
+
+});
+
+
 }
+
+// var trainsNode = firebase.database().ref("Train");
+// trainsNode.on('value', function(snapshot) {
+//     let remoteData = snapshot.trainName.val();
+//     console.log(remoteData);
+//     let trainDisplay = remoteData.trainName;
+//     dataArray.push(trainDisplay);
+//     let destinationDisplay = remoteData.trainDestination;
+//     dataArray.push(destinationDisplay);
+//     let timeDisplay = remoteData.trainTime;
+//     dataArray.push(timeDisplay);
+//     let frequencyDisplay = remoteData.trainFrequency;
+//     dataArray.push(frequencyDisplay);
+//     var tableRow = $("<tr>");
+//     $("#train-display").append(tableRow);
+//     for(var i = 0; i < dataArray.length; i++) {
+//         let tableData = $("<td>");
+//         tableData.text(dataArray[i]);
+//         tableRow.append(tableData);
+//     }
+//     // push to array
+//     // use for loop to make dom elements and append
+
+// });
 
 
