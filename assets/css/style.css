@@ -1,3 +1,20 @@
-h1 {
-    color: blue;
+h2 {
+    text-align: center;
+}
+
+.theme-color{
+    background-color: rgb(75, 196, 212);
+}
+
+table {
+   border: 1px solid #4bc5d4;
+   border-radius: 25px;
+}
+
+.button {   
+    background-color: rgb(75, 196, 212);
+}
+
+.button:hover {
+    background-color: rgb(110, 238, 255);
 }
