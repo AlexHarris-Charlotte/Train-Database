@@ -16,15 +16,14 @@ const trainId = $("#train-name");
 const trainDest = $("#destination");
 const firstArrival = $("#train-time");
 const trainFreq = $("#frequency");
-var dataArray = [];
 
 
 $("#sub-button").on("click", subButton);
 
-const nowMin = parseInt(moment().format("mm"));
-const nowHour = parseInt(moment().format("HH") * 60);
-const currTimeMin = nowHour + nowMin;
-console.log(currTimeMin);
+// const nowMin = parseInt(moment().format("mm"));
+// const nowHour = parseInt(moment().format("HH") * 60);
+// const currTimeMin = nowHour + nowMin;
+// console.log(currTimeMin);
 
 
 
@@ -36,61 +35,45 @@ function subButton(event) {
     const trainFirstTime = firstArrival.val().trim();
     const frequency = parseInt(trainFreq.val().trim());
 
-    // Converts the First Arrival time to total Minutes
-    const trainFirstHour = parseInt(trainFirstTime.substring(0, 2) * 60);
-    const trainFirstMin = parseInt(trainFirstTime.substring(3))
-    const trainFirstTotalMin = trainFirstHour + trainFirstMin;
-    
-    const minutesDiff = currTimeMin - trainFirstTotalMin;
-    console.log(minutesDiff);
-    const minRemainder = minutesDiff % frequency;
-    let minutesAway = frequency - minRemainder;
-    
-    /*To get the next Arrival We need to calculate the difference between
-    current time and first arrival time. We convert the difference into minutes.
-    Assign a variable (remainder) to the difference % frequency. next Arrival
-    in minutes is equal to freq - remainder*/
+    // Time Conversions with Moment.js
+    var currentTime = moment();
+    var firstTimeConverted = moment(trainFirstTime, "hh:mm").subtract(1, "years");
+    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    var tRemainder = diffTime % frequency;
+    var tMinutesTillTrain = frequency - tRemainder;
+    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+    var nextTrainDemo = moment(nextTrain).format("hh:mm");
 
 
-
-
-    database.ref("Train/" + name).set({
+    database.ref().push({
         trainName: name,
         trainDestination: destination,
         trainFirstTime: trainFirstTime,
-        trainFrequency: frequency
+        trainFrequency: frequency,
+        nextArrival: nextTrainDemo,
+        minutesAway: tMinutesTillTrain
+
     })
+
     trainId.val("");
     trainDest.val("");
     firstArrival.val("");
     trainFreq.val("");
 
-    var trainsNode = firebase.database().ref("Train/" + name);
-    trainsNode.on('value', function(snapshot) {
-    let remoteData = snapshot.val();
-    let trainDisplay = remoteData.trainName;
-    dataArray.push(trainDisplay);
-    let destinationDisplay = remoteData.trainDestination;
-    dataArray.push(destinationDisplay);
-    let frequencyDisplay = remoteData.trainFrequency;
-    dataArray.push(frequencyDisplay);
-    let nextArrival = minutesAway + currTimeMin;
-    let nextArrivalHours = ((nextArrival - (nextArrival % 60)) / 60) + ":" + (nextArrival % 60).toString();
-    dataArray.push(nextArrivalHours);
-    dataArray.push(minutesAway);
-    var tableRow = $("<tr>");
-    $("#train-display").append(tableRow);
-    for(var i = 0; i < dataArray.length; i++) {
-        let tableData = $("<td>");
-        tableData.text(dataArray[i]);
-        tableRow.append(tableData);
-    }
-    
-
-});
-
-
 }
+
+database.ref().on("child_added", function(childSnapshot) {
+    var remoteData = childSnapshot.val();
+    console.log(remoteData);
+    
+    $("#train-display").append("<tr> <td> " + remoteData.trainName +
+        "</td> <td> " + remoteData.trainDestination + "</td> <td> " + 
+        remoteData.trainFrequency + "</td> <td>" + remoteData.nextArrival + "</td>" +
+        "<td> " + remoteData.minutesAway + "</td> </tr>");
+
+    }, function(errorObject) {
+        console.log("Errors handled: " + errorObject.code);
+});
 
 
 
